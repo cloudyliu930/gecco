@@ -9,6 +9,19 @@
 	<description>Easy to use lightweight web crawler</description>
 	<url>https://github.com/xtuhcy/gecco</url>
 
+	<distributionManagement>
+		<!-- 如果version不存在-SNAPSHOT表示发布到releases正式版本 -->
+		<repository>
+			<id>releases</id>
+			<url>https://maven.unioncotton.com/repository/maven-releases/</url>
+		</repository>
+		<!-- 如果version存在-SNAPSHOT表示发布到snapshots -->
+		<snapshotRepository>
+			<id>snapshots</id>
+			<url>https://maven.unioncotton.com/repository/maven-snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>

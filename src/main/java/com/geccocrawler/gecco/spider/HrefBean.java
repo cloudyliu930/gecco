@@ -11,10 +11,6 @@ public class HrefBean implements SpiderBean {
 	@Href
 	@HtmlField(cssPath="a")
 	private String url;
-	
-	@Text
-	@HtmlField(cssPath="a")
-	private String title;
 
 	public String getUrl() {
 		return url;
@@ -22,14 +18,6 @@ public class HrefBean implements SpiderBean {
 
 	public void setUrl(String url) {
 		this.url = url;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
 	}
 	
 }

@@ -36,9 +36,8 @@ import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.*;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
@@ -124,18 +123,30 @@ public class HttpClientDownloader extends AbstractDownloader {
 		if(request instanceof HttpPostRequest) {//post
 			HttpPostRequest post = (HttpPostRequest)request;
 			reqObj = new HttpPost(post.getUrl());
-			//post fields
-			List<NameValuePair> fields = new ArrayList<NameValuePair>();
-			for(Map.Entry<String, String> entry : post.getFields().entrySet()) {
-				NameValuePair nvp = new BasicNameValuePair(entry.getKey(), entry.getValue());
-				fields.add(nvp);
+
+			if ("application/json".equals(request.getHeaders().get("Content-Type"))) {
+
+				//第三步：给httpPost设置JSON格式的参数
+				StringEntity requestEntity = new StringEntity(post.getField("data"), "utf-8");
+				requestEntity.setContentType("application/json");
+				requestEntity.setContentEncoding("UTF-8");
+				reqObj.setHeader("Content-type", "application/json");
+				((HttpPost)reqObj).setEntity(requestEntity);
+			} else {
+				//post fields
+				List<NameValuePair> fields = new ArrayList<NameValuePair>();
+				for(Map.Entry<String, String> entry : post.getFields().entrySet()) {
+					NameValuePair nvp = new BasicNameValuePair(entry.getKey(), entry.getValue());
+					fields.add(nvp);
+				}
+				try {
+					HttpEntity entity = new UrlEncodedFormEntity(fields, "UTF-8");
+					((HttpEntityEnclosingRequestBase) reqObj).setEntity(entity);
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
 			}
-			try {
-				HttpEntity entity = new UrlEncodedFormEntity(fields, "UTF-8");
-				((HttpEntityEnclosingRequestBase) reqObj).setEntity(entity);
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
+
 		} else {//get
 			reqObj = new HttpGet(request.getUrl());
 		}
@@ -160,7 +171,7 @@ public class HttpClientDownloader extends AbstractDownloader {
 			if(proxy != null) {
 				log.debug("proxy:" + proxy.getHostName()+":"+proxy.getPort());
 				builder.setProxy(proxy);
-				builder.setConnectTimeout(1000);//如果走代理，连接超时时间固定为1s
+				builder.setConnectTimeout(timeout);//如果走代理，连接超时时间固定为1s
 			}
 		}
 		reqObj.setConfig(builder.build());
